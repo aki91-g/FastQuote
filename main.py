@@ -12,10 +12,45 @@
 # └── .env                     # Environment variables (optional)
 
 ##
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
+from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
+import models
+import schemas
+from db import SessionLocal, engine
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-@app.get("/quote")
-def get_quote():
-    return {"quote"}
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@app.get("/quotes/ramdom/unseen", response_model=schemas.QuoteRead)
+def read_quote_ramdom_unseen(user_id: int, db: Session = Depends(get_db)):
+    seen_ids = db.execute(
+        "SELECT quote_id FROM user_seen_quotes WHERE user_id = :user_id",
+        {"user_id": user_id}
+    ).scalars().all()
+
+    quote = (
+        db.query(models.Quote)
+        .filter(~models.Quote.id.in_(seen_ids))
+        .order_by(func.random())
+        .first()
+    )
+
+    if not quote:
+        raise HTTPException(status_code=404, detail="No unseen quotes left for this user.")
+
+    db.execute(
+        "INSERT INTO user_seen_quotes (user_id, quote_id) VALUES (:user_id, :quote_id)",
+        {"user_id": user_id, "quote_id": quote.id}
+    )
+    db.commit()
+
+    return quote

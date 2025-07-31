@@ -1,0 +1,20 @@
+[
+  {
+    "text": "The only limit to our realization of tomorrow is our doubts of today.",
+    "author": {
+      "name": "Franklin D. Roosevelt",
+      "birth_year": "1882",
+      "death_year": "1945",
+      "bio": "32nd President of the United States."
+    }
+  },
+  {
+    "text": "Life is what happens when you're busy making other plans.",
+    "author": {
+      "name": "John Lennon",
+      "birth_year": "1940",
+      "death_year": "1980",
+      "bio": "English singer, songwriter, and peace activist."
+    }
+  }
+]
